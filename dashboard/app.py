@@ -19,7 +19,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 src_path = os.path.join(os.path.dirname(current_dir), 'src')
 sys.path.insert(0, src_path)
 
-from data_loader import DataLoader
+from data_loader import DataLoader, clean_state_name
 from visualization_utils import VisualizationTools
 
 # Page config
@@ -50,26 +50,11 @@ except (AttributeError, TypeError) as e:
 
 # Clean state names function
 def clean_state_names(df):
-    """Standardize state names: fix typos, normalize case and spacing"""
-    df['state'] = df['state'].astype(str).str.strip()
-    df['state'] = df['state'].str.replace(r'\s+', ' ', regex=True).str.title()
-    
-    state_corrections = {
-        'West Bangal': 'West Bengal', 'Westbengal': 'West Bengal', 'West  Bengal': 'West Bengal',
-        'Jammu And Kashmir': 'Jammu & Kashmir', 'Andaman And Nicobar Islands': 'Andaman & Nicobar Islands',
-        'Dadra And Nagar Haveli': 'Dadra & Nagar Haveli and Daman & Diu',
-        'Daman And Diu': 'Dadra & Nagar Haveli and Daman & Diu',
-        'Dadra & Nagar Haveli': 'Dadra & Nagar Haveli and Daman & Diu',
-        'Daman & Diu': 'Dadra & Nagar Haveli and Daman & Diu',
-        'The Dadra And Nagar Haveli And Daman And Diu': 'Dadra & Nagar Haveli and Daman & Diu',
-        'Dadra And Nagar Haveli And Daman And Diu': 'Dadra & Nagar Haveli and Daman & Diu',
-        'Delhi': 'NCT of Delhi', 'Nct Of Delhi': 'NCT of Delhi',
-        'Uttaranchal': 'Uttarakhand', 'Orissa': 'Odisha', 'Pondicherry': 'Puducherry',
-    }
-    df['state'] = df['state'].replace(state_corrections)
-    invalid_states = ['100000', 'Nan', 'None', '']
-    df = df[~df['state'].isin(invalid_states)]
-    df = df[df['state'].str.match(r'^[A-Za-z\s&]+$')]
+    """Standardize state names using centralized function"""
+    if 'state' in df.columns:
+        df['state'] = df['state'].apply(clean_state_name)
+        # Remove bad data (numeric state values)
+        df = df[~df['state'].str.match(r'^\d+$', na=False)]
     return df
 
 # Clean state names in all datasets

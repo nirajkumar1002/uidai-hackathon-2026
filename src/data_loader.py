@@ -10,6 +10,41 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
+def clean_state_name(state):
+    """Standardize state/UT names to handle variations in formatting"""
+    if pd.isna(state):
+        return state
+    state = str(state).strip()
+    # First, convert to lowercase and then title case for consistency
+    state = state.lower().title()
+    # Fix multiple spaces
+    state = ' '.join(state.split())
+    # Replace ampersand with "And"
+    state = state.replace('&', 'And').replace(' & ', ' And ')
+    # Standardize common variations
+    replacements = {
+        'Orissa': 'Odisha',
+        'Pondicherry': 'Puducherry',
+        'West  Bengal': 'West Bengal',
+        'West Bangal': 'West Bengal',
+        'Westbengal': 'West Bengal',
+        'West Bengal': 'West Bengal',
+        'Andaman And Nicobar Islands': 'Andaman And Nicobar Islands',
+        'Andaman & Nicobar Islands': 'Andaman And Nicobar Islands',
+        # Merge Dadra And Nagar Haveli (old UT) with new merged UT
+        'Dadra And Nagar Haveli': 'Dadra And Nagar Haveli And Daman And Diu',
+        'Dadra And Nagar Haveli And Daman And Diu': 'Dadra And Nagar Haveli And Daman And Diu',
+        'Dadra & Nagar Haveli': 'Dadra And Nagar Haveli And Daman And Diu',
+        'Dadra & Nagar Haveli And Daman And Diu': 'Dadra And Nagar Haveli And Daman And Diu',
+        'The Dadra And Nagar Haveli And Daman And Diu': 'Dadra And Nagar Haveli And Daman And Diu',
+        'Daman And Diu': 'Dadra And Nagar Haveli And Daman And Diu',
+        'Daman & Diu': 'Dadra And Nagar Haveli And Daman And Diu',
+        'Jammu And Kashmir': 'Jammu And Kashmir',
+        'Jammu & Kashmir': 'Jammu And Kashmir',
+    }
+    return replacements.get(state, state)
+
+
 class DataLoader:
     """Load and preprocess UIDAI datasets"""
     
@@ -41,6 +76,14 @@ class DataLoader:
         
         # Convert date column to datetime
         combined['date'] = pd.to_datetime(combined['date'], errors='coerce')
+        
+        # Clean state names
+        if 'state' in combined.columns:
+            combined['state'] = combined['state'].apply(clean_state_name)
+        
+        # Remove bad data (numeric state values)
+        if 'state' in combined.columns:
+            combined = combined[~combined['state'].str.match(r'^\d+$', na=False)]
         
         # Basic cleaning - track duplicates
         duplicates_found = combined.duplicated().sum()
@@ -79,6 +122,14 @@ class DataLoader:
         # Convert date column to datetime
         combined['date'] = pd.to_datetime(combined['date'], errors='coerce')
         
+        # Clean state names
+        if 'state' in combined.columns:
+            combined['state'] = combined['state'].apply(clean_state_name)
+        
+        # Remove bad data (numeric state values)
+        if 'state' in combined.columns:
+            combined = combined[~combined['state'].str.match(r'^\d+$', na=False)]
+        
         # Basic cleaning - track duplicates
         duplicates_found = combined.duplicated().sum()
         combined = combined.drop_duplicates()
@@ -115,6 +166,14 @@ class DataLoader:
         
         # Convert date column to datetime
         combined['date'] = pd.to_datetime(combined['date'], errors='coerce')
+        
+        # Clean state names
+        if 'state' in combined.columns:
+            combined['state'] = combined['state'].apply(clean_state_name)
+        
+        # Remove bad data (numeric state values)
+        if 'state' in combined.columns:
+            combined = combined[~combined['state'].str.match(r'^\d+$', na=False)]
         
         # Basic cleaning - track duplicates
         duplicates_found = combined.duplicated().sum()
