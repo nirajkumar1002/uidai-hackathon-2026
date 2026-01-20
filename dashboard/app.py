@@ -152,7 +152,7 @@ elif page == "🔴 Problem #1: Biometric Compliance":
     
     st.markdown("""
     ### The Issue
-    Children should get biometric updates at age 5 and 15 (mandatory transitions).
+    MBU (Mandatory Biometric Update), Children should get biometric updates at age 5 and 15 (mandatory transitions).
     But compliance varies massively across states. Some regions have excellent 
     tracking, others have zero compliance infrastructure.
     """)
