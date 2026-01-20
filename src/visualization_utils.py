@@ -254,4 +254,4 @@ def save_figure(fig, filename, output_dir='../outputs/figures'):
 
 
 if __name__ == "__main__":
-    print("✅ Visualization utilities loaded successfully!")
+    print(" Visualization utilities loaded successfully!")

@@ -10,18 +10,18 @@ from pathlib import Path
 def check_python_version():
     """Check if Python version is compatible"""
     version = sys.version_info
-    print(f"🐍 Python version: {version.major}.{version.minor}.{version.micro}")
+    print(f" Python version: {version.major}.{version.minor}.{version.micro}")
     
     if version.major < 3 or (version.major == 3 and version.minor < 8):
-        print("❌ Python 3.8 or higher is required!")
+        print(" Python 3.8 or higher is required!")
         return False
     
-    print("✅ Python version is compatible")
+    print(" Python version is compatible")
     return True
 
 def install_requirements():
     """Install all required packages"""
-    print("\n📦 Installing required packages...")
+    print("\n Installing required packages...")
     print("This may take a few minutes...\n")
     
     requirements_file = Path(__file__).parent.parent / "requirements.txt"
@@ -36,15 +36,15 @@ def install_requirements():
             str(requirements_file),
             "--upgrade"
         ])
-        print("\n✅ All packages installed successfully!")
+        print("\n All packages installed successfully!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"\n❌ Error installing packages: {e}")
+        print(f"\n Error installing packages: {e}")
         return False
 
 def verify_installation():
     """Verify key packages are installed"""
-    print("\n🔍 Verifying installation...")
+    print("\n Verifying installation...")
     
     required_packages = [
         'pandas', 'numpy', 'matplotlib', 'seaborn', 'plotly',
@@ -55,9 +55,9 @@ def verify_installation():
     for package in required_packages:
         try:
             __import__(package)
-            print(f"  ✓ {package}")
+            print(f"   {package}")
         except ImportError:
-            print(f"  ✗ {package} - NOT FOUND")
+            print(f"   {package} - NOT FOUND")
             all_installed = False
     
     return all_installed
@@ -71,7 +71,7 @@ def create_data_structure_guide():
 ║          UIDAI HACKATHON - DATA PLACEMENT GUIDE                ║
 ╚════════════════════════════════════════════════════════════════╝
 
-📁 PLACE YOUR CSV FILES IN THE FOLLOWING FOLDERS:
+ PLACE YOUR CSV FILES IN THE FOLLOWING FOLDERS:
 
 1. ENROLLMENT DATA (3 CSV files)
    → data/raw/enrolment/
@@ -84,7 +84,7 @@ def create_data_structure_guide():
 
 ═══════════════════════════════════════════════════════════════
 
-📋 AFTER PLACING FILES, RUN:
+ AFTER PLACING FILES, RUN:
 
 Option 1 - Automated Analysis:
    python src/automated_eda.py
@@ -94,7 +94,7 @@ Option 2 - Interactive Jupyter Notebook:
 
 ═══════════════════════════════════════════════════════════════
 
-✨ QUICK COMMANDS:
+ QUICK COMMANDS:
 
 - Install dependencies:
   python src/setup.py
@@ -114,13 +114,13 @@ Option 2 - Interactive Jupyter Notebook:
     with open(guide_file, 'w') as f:
         f.write(content)
     
-    print(f"\n📄 Created: {guide_file}")
+    print(f"\n Created: {guide_file}")
     print(content)
 
 def main():
     """Main setup function"""
     print("\n" + "="*70)
-    print("🚀 UIDAI HACKATHON - PROJECT SETUP")
+    print(" UIDAI HACKATHON - PROJECT SETUP")
     print("="*70 + "\n")
     
     # Check Python version
@@ -129,22 +129,22 @@ def main():
     
     # Install packages
     if not install_requirements():
-        print("\n⚠️ Some packages failed to install. Please check the errors above.")
+        print("\n Some packages failed to install. Please check the errors above.")
         return
     
     # Verify installation
     if not verify_installation():
-        print("\n⚠️ Some packages are missing. Try running again.")
+        print("\n Some packages are missing. Try running again.")
         return
     
     # Create guide
     create_data_structure_guide()
     
     print("\n" + "="*70)
-    print("✅ SETUP COMPLETE!")
+    print(" SETUP COMPLETE!")
     print("="*70)
     
-    print("\n📌 NEXT STEPS:")
+    print("\n NEXT STEPS:")
     print("1. Place your CSV files in the appropriate data/raw/ folders")
     print("2. Run: python src/automated_eda.py")
     print("3. Or launch Jupyter: jupyter notebook")

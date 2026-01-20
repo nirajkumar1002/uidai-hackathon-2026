@@ -62,7 +62,7 @@ class DataLoader:
         print(f"   Found {len(csv_files)} CSV files")
         
         if not csv_files:
-            print("   ⚠️ No CSV files found in enrolment folder!")
+            print("    No CSV files found in enrolment folder!")
             return None
         
         dfs = []
@@ -107,7 +107,7 @@ class DataLoader:
         print(f"   Found {len(csv_files)} CSV files")
         
         if not csv_files:
-            print("   ⚠️ No CSV files found in demographic_update folder!")
+            print("    No CSV files found in demographic_update folder!")
             return None
         
         dfs = []
@@ -152,7 +152,7 @@ class DataLoader:
         print(f"   Found {len(csv_files)} CSV files")
         
         if not csv_files:
-            print("   ⚠️ No CSV files found in biometric_update folder!")
+            print("    No CSV files found in biometric_update folder!")
             return None
         
         dfs = []

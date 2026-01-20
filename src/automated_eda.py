@@ -21,7 +21,7 @@ def main():
     """Main execution function"""
     
     print("\n" + "="*80)
-    print("🚀 UIDAI HACKATHON - AUTOMATED EDA")
+    print(" UIDAI HACKATHON - AUTOMATED EDA")
     print("="*80)
     print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
     
@@ -32,7 +32,7 @@ def main():
     datasets = loader.load_all_data()
     
     if all(df is None for df in datasets.values()):
-        print("\n❌ No data loaded! Please place CSV files in the data/raw folders.")
+        print("\n No data loaded! Please place CSV files in the data/raw folders.")
         print("\nExpected structure:")
         print("  data/raw/enrolment/       - 3 CSV files")
         print("  data/raw/demographic_update/ - 6 CSV files")
@@ -75,13 +75,13 @@ def main():
             fig = viz.plot_time_series(daily_totals, 'date', ['total'], 
                                        title=f'{name.title()} - Daily Trend')
             save_figure(fig, f'{name}_daily_trend')
-            print(f"  ✓ Daily trend chart saved")
+            print(f"   Daily trend chart saved")
             
             # State comparison
             if 'state' in df.columns:
                 fig = viz.plot_state_comparison(df, 'state', 'total')
                 save_figure(fig, f'{name}_state_comparison')
-                print(f"  ✓ State comparison chart saved")
+                print(f"   State comparison chart saved")
             
             # Age distribution
             age_cols = [col for col in df.columns if 'age' in col.lower()]
@@ -89,7 +89,7 @@ def main():
                 fig = viz.plot_age_distribution(df, age_cols, 
                                                title=f'{name.title()} - Age Distribution')
                 save_figure(fig, f'{name}_age_distribution')
-                print(f"  ✓ Age distribution chart saved")
+                print(f"   Age distribution chart saved")
     
     # Step 4: Generate summary report
     print("\n\nSTEP 4: Generating Summary Report...")
@@ -122,18 +122,18 @@ def main():
                     for i, insight in enumerate(analyzers[name].insights, 1):
                         f.write(f"  {i}. {insight}\n")
     
-    print(f"\n✅ Report saved: {report_file}")
+    print(f"\n Report saved: {report_file}")
     
     # Step 5: Next steps recommendations
     print("\n\n" + "="*80)
-    print("✅ AUTOMATED EDA COMPLETE!")
+    print(" AUTOMATED EDA COMPLETE!")
     print("="*80)
     
-    print("\n📊 Generated Files:")
-    print(f"  📁 Visualizations: outputs/figures/")
-    print(f"  📄 Report: {report_file}")
+    print("\n Generated Files:")
+    print(f"   Visualizations: outputs/figures/")
+    print(f"   Report: {report_file}")
     
-    print("\n🎯 RECOMMENDED NEXT STEPS:")
+    print("\n RECOMMENDED NEXT STEPS:")
     print("\n1. REVIEW VISUALIZATIONS")
     print("   - Open the HTML files in outputs/figures/")
     print("   - Look for unusual patterns, spikes, or anomalies")

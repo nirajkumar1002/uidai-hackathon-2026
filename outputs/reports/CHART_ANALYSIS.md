@@ -65,7 +65,7 @@
 10. Gujarat: ~199,096 (4.3%)
 
 **Key Observations:**
-- Top 5 states = **45.5%** of all enrollments
+- Top 5 states = **55.3%** of all enrollments
 - Massive geographic concentration
 - UP alone = 12% of national enrollments
 - Gap: UP has 5x enrollments vs smaller states
@@ -237,7 +237,7 @@
 - Need to investigate: Which days? Monthly pattern?
 
 ### Insight #2: Geographic Concentration
-- 5 states = 45% of enrollments
+- 5 states = 55.3% of enrollments
 - Top 10 districts = 5% of enrollments
 - Urban metros dominate
 - Northeastern states likely absent
@@ -268,7 +268,7 @@
 **Impact:** Adults without Aadhaar excluded from benefits
 
 ### PROBLEM #3: "The Geographic Digital Divide"
-**Hook:** 5 states control 45% of enrollments  
+**Hook:** 5 states control 55.3% of enrollments  
 **Question:** Why are Northeastern states 10x behind?  
 **Impact:** Regional inequality in digital identity access
 
@@ -319,13 +319,13 @@
 **My Recommendation: Biometric Compliance Gap + Geographic Divide (Combined)**
 
 **Why?**
-1. ✅ Strong data evidence
-2. ✅ High policy relevance
-3. ✅ Affects children (emotional appeal)
-4. ✅ Regional disparities (geographic story)
-5. ✅ Actionable recommendations possible
-6. ✅ Great visualization potential
-7. ✅ Unique angle (not obvious)
+1.  Strong data evidence
+2.  High policy relevance
+3.  Affects children (emotional appeal)
+4.  Regional disparities (geographic story)
+5.  Actionable recommendations possible
+6.  Great visualization potential
+7.  Unique angle (not obvious)
 
 **The Winning Story:**
 "Children are enrolling in Aadhaar at record rates, but regional compliance gaps in mandatory biometric updates create a two-tiered system: urban metros maintain authentication readiness, while rural and Northeastern regions risk authentication failures that block access to welfare schemes. Here's where the gaps are, why they exist, and what can be done."

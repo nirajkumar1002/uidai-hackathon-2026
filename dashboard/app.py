@@ -11,6 +11,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import streamlit.components.v1 as components
 import sys
 import os
 
@@ -74,8 +75,9 @@ page = st.sidebar.radio(
     [
         "🏠 Overview",
         "🔴 Problem #1: Biometric Compliance",
-        "🔴 Problem #3: Geographic Divide",
-        "🔴 Problem #4: Urban-Rural Gap",
+        "🔴 Problem #2: Geographic Divide",
+        "🔴 Problem #3: Urban-Rural Gap",
+        "🔬 Advanced Analytics",
         "💡 Synthesis & Recommendations"
     ]
 )
@@ -116,13 +118,13 @@ if page == "🏠 Overview":
     - Some children never get authenticated
     - Impact: Welfare access blocked for non-compliant regions
     
-    **🔴 Problem #3: Geographic Digital Divide**
-    - Top 5 states = 45%+ of all enrollments
+    **🔴 Problem #2: Geographic Digital Divide**
+    - Top 5 states = 55.3% of all enrollments
     - Massive concentration in developed regions
     - Northeastern states severely underserved
     - Impact: Regional inequality in digital access
     
-    **🔴 Problem #4: Urban-Rural Coverage Disparity**
+    **🔴 Problem #3: Urban-Rural Coverage Disparity**
     - Urban metros get 10x+ more enrollments
     - Rural enrollment infrastructure inadequate
     - Villages lack awareness and centers
@@ -213,14 +215,14 @@ elif page == "🔴 Problem #1: Biometric Compliance":
     """)
 
 # ============================================================================
-# PAGE 3: PROBLEM #3 - GEOGRAPHIC DIVIDE
+# PAGE 3: PROBLEM #2 - GEOGRAPHIC DIVIDE
 # ============================================================================
-elif page == "🔴 Problem #3: Geographic Divide":
-    st.title("🔴 PROBLEM #3: GEOGRAPHIC DIGITAL DIVIDE")
+elif page == "🔴 Problem #2: Geographic Divide":
+    st.title("🔴 PROBLEM #2: GEOGRAPHIC DIGITAL DIVIDE")
     
     st.markdown("""
     ### The Issue
-    Enrollment is heavily concentrated in 5 states that account for 45%+ of 
+    Enrollment is heavily concentrated in 5 states that account for 55.3% of 
     national activity. Other regions, especially Northeastern states, are 
     severely underserved.
     """)
@@ -279,19 +281,19 @@ elif page == "🔴 Problem #3: Geographic Divide":
     
     st.subheader("💡 Key Insight")
     st.warning("""
-    **Geographic Inequality**: While top 5 states account for 45%+ of enrollments,
+    **Geographic Inequality**: While top 5 states account for 55.3% of enrollments,
     they represent only ~16% of India's states/UTs. This means:
-    - Other states get <1/20th of resources
+    - Other states get less than 1/20th of resources
     - Northeastern expansion severely limited
     - Policy attention concentrated in few regions
     - Creates structural digital divide
     """)
 
 # ============================================================================
-# PAGE 4: PROBLEM #4 - URBAN-RURAL GAP
+# PAGE 4: PROBLEM #3 - URBAN-RURAL GAP
 # ============================================================================
-elif page == "🔴 Problem #4: Urban-Rural Gap":
-    st.title("🔴 PROBLEM #4: URBAN-RURAL COVERAGE DISPARITY")
+elif page == "🔴 Problem #3: Urban-Rural Gap":
+    st.title("🔴 PROBLEM #3: URBAN-RURAL COVERAGE DISPARITY")
     
     st.markdown("""
     ### The Issue
@@ -366,6 +368,175 @@ elif page == "🔴 Problem #4: Urban-Rural Gap":
     - Bottom district: {district_volumes.index[-1]} ({district_volumes.iloc[-1]:,.0f} enrollments)
     - Disparity: {district_volumes.iloc[0] / district_volumes.iloc[-1]:.0f}x
     """)
+
+# ============================================================================
+# PAGE 5: ADVANCED ANALYTICS (Validation, Clustering, Regression)
+# ============================================================================
+elif page == "🔬 Advanced Analytics":
+    st.title("🔬 ADVANCED ANALYTICS")
+
+    st.markdown("""
+    This section validates findings statistically, identifies state clusters, and
+    highlights predictors for biometric compliance. Figures can be generated live
+    or loaded from saved HTML for performance.
+    """)
+
+    # Figure source toggle
+    fig_source = st.radio("Figure source", ["Live (Plotly)", "Saved HTML"], index=0, horizontal=True)
+
+    # Prepare aggregates (if not already)
+    enrolment_df['total_enroll'] = enrolment_df[['age_0_5', 'age_5_17', 'age_18_greater']].sum(axis=1)
+    enrolment_df['children_enroll'] = enrolment_df[['age_0_5', 'age_5_17']].sum(axis=1)
+    biometric_df['bio_child'] = biometric_df['bio_age_5_17']
+
+    # State-level compliance
+    state_enroll = enrolment_df.groupby('state')[['children_enroll']].sum().reset_index()
+    state_bio = biometric_df.groupby('state')['bio_child'].sum().reset_index()
+    state_bio.columns = ['state', 'child_bio_updates']
+    state_data = state_enroll.merge(state_bio, on='state', how='left')
+    state_data['child_bio_updates'] = state_data['child_bio_updates'].fillna(0)
+    state_data['compliance_ratio'] = state_data['child_bio_updates'] / state_data['children_enroll']
+
+    # Urban/Rural split for urban_pct
+    district_volumes = enrolment_df.groupby('district')['total_enroll'].sum().sort_values(ascending=False)
+    urban_districts = set(district_volumes.head(50).index)
+    enrolment_df['area_type'] = enrolment_df['district'].apply(lambda x: 'Urban' if x in urban_districts else 'Rural')
+
+    # Per-state metrics
+    state_metrics = enrolment_df.groupby('state').agg({
+        'total_enroll': 'sum',
+        'district': 'nunique',
+        'area_type': lambda x: (x == 'Urban').sum() / len(x)
+    }).reset_index()
+    state_metrics.columns = ['state', 'total_enroll', 'num_districts', 'urban_pct']
+    state_metrics = state_metrics.merge(state_data[['state', 'compliance_ratio']], on='state', how='left').dropna()
+
+    # Validation banner
+    canonical_states = set([
+        'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
+        'Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur',
+        'Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana',
+        'Tripura','Uttar Pradesh','Uttarakhand','West Bengal',
+        'Andaman And Nicobar Islands','Chandigarh','Dadra And Nagar Haveli And Daman And Diu','Delhi',
+        'Jammu And Kashmir','Ladakh','Lakshadweep','Puducherry'
+    ])
+    observed_states = set(state_data['state'].unique())
+    missing = sorted(list(canonical_states - observed_states))
+    extras = sorted(list(observed_states - canonical_states))
+    if not missing and not extras and len(observed_states) == 36:
+        st.success("State/UT validation passed: Observed = Canonical (36)")
+    else:
+        st.warning(f"Validation mismatch. Missing: {missing} | Extras: {extras}")
+
+    st.divider()
+    st.subheader("📈 Correlation: Predictors of Compliance")
+    if fig_source == "Live (Plotly)":
+        import plotly.express as px
+        fig = px.imshow(
+            state_metrics[['total_enroll', 'num_districts', 'urban_pct', 'compliance_ratio']].corr(),
+            text_auto=True,
+            color_continuous_scale='RdBu',
+            labels=dict(x='Variable', y='Variable', color='Correlation'),
+            title='Correlation Matrix: What Predicts Compliance?'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        # Load saved HTML
+        html_path = os.path.join(os.path.dirname(current_dir), 'outputs', 'figures', 'advanced_correlation_heatmap.html')
+        if os.path.exists(html_path):
+            with open(html_path, 'r', encoding='utf-8') as f:
+                components.html(f.read(), height=600, scrolling=True)
+        else:
+            st.info("Saved correlation figure not found. Switch to Live mode.")
+    
+    st.markdown("""
+    **📌 Key Outcomes & Inferences:**
+    - **Compliance vs Enrollment**: Strong negative correlation suggests high-volume states struggle with compliance tracking
+    - **Compliance vs Urbanization**: Urban concentration tends to improve compliance (better infrastructure)
+    - **Implication**: While top states have scale, quality tracking requires balanced urban-rural infrastructure
+    """)
+    
+
+    st.divider()
+    st.subheader("🧭 Clustering: State Groupings")
+    if fig_source == "Live (Plotly)":
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.cluster import KMeans
+        cluster_data = state_metrics[['total_enroll', 'compliance_ratio', 'urban_pct']].copy()
+        cluster_data_scaled = StandardScaler().fit_transform(cluster_data)
+        kmeans = KMeans(n_clusters=4, random_state=42, n_init=10)
+        state_metrics['cluster'] = kmeans.fit_predict(cluster_data_scaled)
+        fig = px.scatter_3d(
+            state_metrics,
+            x='total_enroll', y='compliance_ratio', z='urban_pct', color='cluster',
+            hover_name='state',
+            labels={'total_enroll': 'Total Enrollment','compliance_ratio': 'Compliance Ratio','urban_pct': 'Urban %'},
+            title='State Clusters: Enrollment vs Compliance vs Urbanization',
+            color_continuous_scale='Viridis'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        html_path = os.path.join(os.path.dirname(current_dir), 'outputs', 'figures', 'advanced_clustering_3d.html')
+        if os.path.exists(html_path):
+            with open(html_path, 'r', encoding='utf-8') as f:
+                components.html(f.read(), height=600, scrolling=True)
+        else:
+            st.info("Saved clustering figure not found. Switch to Live mode.")
+
+    st.markdown("""
+    **📌 Key Outcomes & Inferences:**
+    - **Cluster 1 (High Enrollment + High Compliance)**: Tier-1 developed states with robust infrastructure—focus: optimization
+    - **Cluster 2 (High Enrollment + Low Compliance)**: Crisis zones (e.g., large states with tracking gaps)—focus: urgent intervention
+    - **Cluster 3 (Low Enrollment + Variable Compliance)**: Emerging/underserved states—focus: expansion infrastructure
+    - **Cluster 4 (Rural-Heavy States)**: Limited urbanization despite volume—focus: rural center deployment
+    - **Implication**: Different states need different strategies; one-size-fits-all policies will fail
+    """)
+    
+    st.subheader("📍 States by Cluster")
+    cluster_cols = st.columns(4)
+    for cluster_id in range(4):
+        with cluster_cols[cluster_id]:
+            cluster_states = state_metrics[state_metrics['cluster'] == cluster_id].sort_values('total_enroll', ascending=False)
+            st.markdown(f"**Cluster {cluster_id + 1}** ({len(cluster_states)} states/UTs)")
+            for idx, row in cluster_states.iterrows():
+                st.caption(f"{row['state']} ({row['total_enroll']:,.0f} enrollments)")
+    
+
+    st.divider()
+    st.subheader("📊 Regression Summary: Predicting Compliance")
+    from sklearn.linear_model import LinearRegression
+    from sklearn.ensemble import RandomForestRegressor
+    X = state_metrics[['total_enroll', 'num_districts', 'urban_pct']].values
+    y = state_metrics['compliance_ratio'].values
+    lr_model = LinearRegression().fit(X, y)
+    rf_model = RandomForestRegressor(n_estimators=100, random_state=42).fit(X, y)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"**Linear Regression R²:** {lr_model.score(X, y):.4f}")
+        st.write({
+            'total_enroll': float(lr_model.coef_[0]),
+            'num_districts': float(lr_model.coef_[1]),
+            'urban_pct': float(lr_model.coef_[2])
+        })
+    with col2:
+        st.markdown(f"**Random Forest R²:** {rf_model.score(X, y):.4f}")
+        st.write({
+            'total_enroll': float(rf_model.feature_importances_[0]),
+            'num_districts': float(rf_model.feature_importances_[1]),
+            'urban_pct': float(rf_model.feature_importances_[2])
+        })
+    
+    st.markdown("""
+    **📌 Key Outcomes & Inferences:**
+    - **Model Performance (R²)**: Measures how well enrollment scale and urbanization predict compliance quality
+    - **Feature Importance**: Identifies which factors most strongly drive biometric compliance across states
+      - **Enrollment Volume**: Large states need scaled tracking infrastructure; more data = harder to maintain compliance
+      - **Number of Districts**: Fragmentation creates coordination challenges; more districts = compliance complexity
+      - **Urbanization %**: Urban concentration enables better infrastructure utilization and compliance tracking
+    - **Prediction Implication**: To improve compliance, focus on states with high enrollment + rural disparity (Clusters 2-3)
+    - **Actionable Insight**: States can improve compliance by investing in distributed (non-urban-centric) biometric infrastructure
+    """)
+    
 
 # ============================================================================
 # PAGE 5: SYNTHESIS & RECOMMENDATIONS

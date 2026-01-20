@@ -21,7 +21,7 @@ class EDAAnalyzer:
     def basic_info(self):
         """Print basic dataset information"""
         print(f"\n{'='*60}")
-        print(f"📊 BASIC INFO - {self.name}")
+        print(f" BASIC INFO - {self.name}")
         print(f"{'='*60}")
         print(f"Shape: {self.df.shape[0]:,} rows × {self.df.shape[1]} columns")
         print(f"Memory usage: {self.df.memory_usage(deep=True).sum() / 1024**2:.2f} MB")
@@ -31,7 +31,7 @@ class EDAAnalyzer:
     def missing_data_analysis(self):
         """Analyze missing data"""
         print(f"\n{'='*60}")
-        print(f"❓ MISSING DATA ANALYSIS - {self.name}")
+        print(f" MISSING DATA ANALYSIS - {self.name}")
         print(f"{'='*60}")
         
         missing = self.df.isnull().sum()
@@ -46,7 +46,7 @@ class EDAAnalyzer:
         missing_df = missing_df[missing_df['Missing Count'] > 0].sort_values('Missing Count', ascending=False)
         
         if len(missing_df) == 0:
-            print("✅ No missing values found!")
+            print(" No missing values found!")
         else:
             print(missing_df.to_string(index=False))
             self.insights.append(f"Missing data in {len(missing_df)} columns")
@@ -56,7 +56,7 @@ class EDAAnalyzer:
     def numeric_summary(self):
         """Summary statistics for numeric columns"""
         print(f"\n{'='*60}")
-        print(f"🔢 NUMERIC SUMMARY - {self.name}")
+        print(f" NUMERIC SUMMARY - {self.name}")
         print(f"{'='*60}")
         
         numeric_cols = self.df.select_dtypes(include=[np.number]).columns
@@ -72,13 +72,13 @@ class EDAAnalyzer:
             zero_count = (self.df[col] == 0).sum()
             zero_pct = (zero_count / len(self.df)) * 100
             if zero_pct > 50:
-                print(f"\n⚠️ {col}: {zero_pct:.1f}% zeros!")
+                print(f"\n {col}: {zero_pct:.1f}% zeros!")
                 self.insights.append(f"{col} has {zero_pct:.1f}% zeros")
     
     def categorical_summary(self):
         """Summary for categorical columns"""
         print(f"\n{'='*60}")
-        print(f"📋 CATEGORICAL SUMMARY - {self.name}")
+        print(f" CATEGORICAL SUMMARY - {self.name}")
         print(f"{'='*60}")
         
         categorical_cols = self.df.select_dtypes(include=['object']).columns
@@ -96,7 +96,7 @@ class EDAAnalyzer:
             return
         
         print(f"\n{'='*60}")
-        print(f"📅 TEMPORAL ANALYSIS - {self.name}")
+        print(f" TEMPORAL ANALYSIS - {self.name}")
         print(f"{'='*60}")
         
         self.df[date_col] = pd.to_datetime(self.df[date_col], errors='coerce')
@@ -112,13 +112,13 @@ class EDAAnalyzer:
         missing_dates = set(date_range) - set(date_counts.index)
         
         if missing_dates:
-            print(f"\n⚠️ Missing dates: {len(missing_dates)} days")
+            print(f"\n Missing dates: {len(missing_dates)} days")
             self.insights.append(f"Missing {len(missing_dates)} dates in time series")
     
     def detect_outliers(self, numeric_cols=None):
         """Detect outliers using IQR method"""
         print(f"\n{'='*60}")
-        print(f"🎯 OUTLIER DETECTION - {self.name}")
+        print(f" OUTLIER DETECTION - {self.name}")
         print(f"{'='*60}")
         
         if numeric_cols is None:
@@ -143,7 +143,7 @@ class EDAAnalyzer:
     def geographic_coverage(self):
         """Analyze geographic coverage"""
         print(f"\n{'='*60}")
-        print(f"🗺️ GEOGRAPHIC COVERAGE - {self.name}")
+        print(f" GEOGRAPHIC COVERAGE - {self.name}")
         print(f"{'='*60}")
         
         if 'state' in self.df.columns:
@@ -160,7 +160,7 @@ class EDAAnalyzer:
             # Check for invalid pincodes
             invalid_pins = self.df[self.df['pincode'].astype(str).str.len() != 6]
             if len(invalid_pins) > 0:
-                print(f"\n⚠️ Invalid pincodes: {len(invalid_pins):,} records")
+                print(f"\n Invalid pincodes: {len(invalid_pins):,} records")
     
     def age_distribution_analysis(self):
         """Analyze age group distributions"""
@@ -170,7 +170,7 @@ class EDAAnalyzer:
             return
         
         print(f"\n{'='*60}")
-        print(f"👥 AGE DISTRIBUTION - {self.name}")
+        print(f" AGE DISTRIBUTION - {self.name}")
         print(f"{'='*60}")
         
         for col in age_cols:
@@ -180,7 +180,7 @@ class EDAAnalyzer:
     def correlation_analysis(self):
         """Analyze correlations between numeric columns"""
         print(f"\n{'='*60}")
-        print(f"🔗 CORRELATION ANALYSIS - {self.name}")
+        print(f" CORRELATION ANALYSIS - {self.name}")
         print(f"{'='*60}")
         
         numeric_cols = self.df.select_dtypes(include=[np.number]).columns
@@ -212,7 +212,7 @@ class EDAAnalyzer:
     def generate_insights_report(self):
         """Generate a summary of key insights"""
         print(f"\n{'='*60}")
-        print(f"💡 KEY INSIGHTS - {self.name}")
+        print(f" KEY INSIGHTS - {self.name}")
         print(f"{'='*60}")
         
         if self.insights:
@@ -243,4 +243,4 @@ def quick_eda(df, name="Dataset"):
 
 
 if __name__ == "__main__":
-    print("✅ EDA utilities loaded successfully!")
+    print(" EDA utilities loaded successfully!")
