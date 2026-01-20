@@ -78,7 +78,8 @@ page = st.sidebar.radio(
         "🔴 Problem #2: Geographic Divide",
         "🔴 Problem #3: Urban-Rural Gap",
         "🔬 Advanced Analytics",
-        "💡 Synthesis & Recommendations"
+        "💡 Synthesis & Recommendations",
+        "👥 Team"
     ]
 )
 
@@ -476,13 +477,10 @@ elif page == "🔬 Advanced Analytics":
         )
         fig.update_layout(
             scene=dict(
-                xaxis=dict(gridcolor='rgba(200, 200, 200, 0.3)', showgrid=True),
-                yaxis=dict(gridcolor='rgba(200, 200, 200, 0.3)', showgrid=True),
-                zaxis=dict(gridcolor='rgba(200, 200, 200, 0.3)', showgrid=True),
-                bgcolor='rgba(240, 240, 240, 0.9)'
-            ),
-            paper_bgcolor='white',
-            plot_bgcolor='white'
+                xaxis=dict(gridcolor='lightgray', showgrid=True),
+                yaxis=dict(gridcolor='lightgray', showgrid=True),
+                zaxis=dict(gridcolor='lightgray', showgrid=True)
+            )
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
@@ -503,13 +501,15 @@ elif page == "🔬 Advanced Analytics":
     """)
     
     st.subheader("📍 States by Cluster")
-    cluster_cols = st.columns(4)
+    cluster_table_data = {f"Cluster {i+1}": [] for i in range(4)}
     for cluster_id in range(4):
-        with cluster_cols[cluster_id]:
-            cluster_states = state_metrics[state_metrics['cluster'] == cluster_id].sort_values('total_enroll', ascending=False)
-            st.markdown(f"**Cluster {cluster_id + 1}** ({len(cluster_states)} states/UTs)")
-            for idx, row in cluster_states.iterrows():
-                st.caption(f"{row['state']} ({row['total_enroll']:,.0f} enrollments)")
+        cluster_states = state_metrics[state_metrics['cluster'] == cluster_id].sort_values('total_enroll', ascending=False)
+        cluster_table_data[f"Cluster {cluster_id + 1}"] = cluster_states['state'].tolist()
+    max_len = max(len(v) for v in cluster_table_data.values())
+    for key in cluster_table_data:
+        cluster_table_data[key] += [''] * (max_len - len(cluster_table_data[key]))
+    cluster_df = pd.DataFrame(cluster_table_data)
+    st.dataframe(cluster_df, use_container_width=True, hide_index=True)
     
 
     st.divider()
@@ -658,6 +658,47 @@ elif page == "💡 Synthesis & Recommendations":
     - Real-time compliance tracking
     - Quarterly performance reviews
     - Adjustment based on data
+    """)
+
+# ============================================================================
+# PAGE 7: TEAM
+# ============================================================================
+elif page == "👥 Team":
+    st.title("👥 Team: Dhurandhar")
+    st.subheader("UIDAI Data Hackathon 2026")
+    
+    st.markdown("---")
+    
+    # Team members
+    team_members = [
+        {"name": "Niraj Kumar", "email": "21f1006589@ds.study.iitm.ac.in", "emoji": "🧑‍💼"},
+        {"name": "Shruti Chandagade", "email": "placeholder@email.com", "emoji": "👩‍💼"},
+        {"name": "Pawan Chaudhary", "email": "placeholder@email.com", "emoji": "🧑‍💼"},
+        {"name": "Ritesh Sharma", "email": "placeholder@email.com", "emoji": "🧑‍💼"},
+        {"name": "Pradeep Mondal", "email": "placeholder@email.com", "emoji": "🧑‍💼"},
+        
+    ]
+    
+    # Display in 2x2 grid
+    col1, col2 = st.columns(2)
+    
+    for idx, member in enumerate(team_members):
+        with col1 if idx % 2 == 0 else col2:
+            st.markdown(f"""
+            <div style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; background-color: #f9f9f9;">
+                <h3 style="margin-bottom: 10px; color: black;">{member['emoji']} {member['name']}</h3>
+                <p style="color: #666; margin: 5px 0;">
+                    📧 <a href="mailto:{member['email']}" style="color: #0066cc; text-decoration: none;">{member['email']}</a>
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.markdown("""
+    ### 🎯 Project Contribution
+    This team collaborated on the comprehensive analysis of UIDAI Aadhaar enrollment data, 
+    identifying three critical problems and developing data-driven policy recommendations 
+    for inclusive digital identity access across India.
     """)
 
 # Footer
