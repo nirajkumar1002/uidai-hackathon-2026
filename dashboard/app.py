@@ -474,6 +474,16 @@ elif page == "🔬 Advanced Analytics":
             title='State Clusters: Enrollment vs Compliance vs Urbanization',
             color_continuous_scale='Viridis'
         )
+        fig.update_layout(
+            scene=dict(
+                xaxis=dict(gridcolor='rgba(200, 200, 200, 0.3)', showgrid=True),
+                yaxis=dict(gridcolor='rgba(200, 200, 200, 0.3)', showgrid=True),
+                zaxis=dict(gridcolor='rgba(200, 200, 200, 0.3)', showgrid=True),
+                bgcolor='rgba(240, 240, 240, 0.9)'
+            ),
+            paper_bgcolor='white',
+            plot_bgcolor='white'
+        )
         st.plotly_chart(fig, use_container_width=True)
     else:
         html_path = os.path.join(os.path.dirname(current_dir), 'outputs', 'figures', 'advanced_clustering_3d.html')
