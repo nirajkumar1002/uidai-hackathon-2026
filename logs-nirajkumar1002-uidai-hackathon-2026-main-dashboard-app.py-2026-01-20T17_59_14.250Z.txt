@@ -664,3 +664,8 @@ For `use_container_width=True`, use `width='stretch'`. For `use_container_width=
 [17:57:01] 📦 Processed dependencies!
 [17:57:03] ❗️ error restarting streamlit: exit status 7: output: streamlit: ERROR (not running)
 streamlit: ERROR (spawn error)
+
+[18:03:12] 🐙 Pulling code changes from Github...
+[18:03:14] 📦 Processing dependencies...
+[18:03:14] 📦 Apt dependencies were installed from /mount/src/uidai-hackathon-2026/packages.txt using apt-get.
+[18:05:49] ❗️ installer returned a non-zero exit code
