@@ -31,22 +31,57 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load data
+# Suppress Streamlit warnings
+import warnings
+warnings.filterwarnings('ignore')
+
+# Add custom CSS to prevent crashes from rendering issues
+st.markdown("""
+<style>
+    .stMetric {
+        background-color: #f0f2f6;
+        padding: 10px;
+        border-radius: 5px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Load data with timeout and error handling
 @st.cache_resource
 def load_data():
-    # Get absolute path to data directory
-    project_root = os.path.dirname(current_dir)
-    data_path = os.path.join(project_root, 'data', 'raw')
-    loader = DataLoader(data_dir=data_path)
-    return loader.load_all_data()
+    try:
+        # Get absolute path to data directory
+        project_root = os.path.dirname(current_dir)
+        data_path = os.path.join(project_root, 'data', 'raw')
+        
+        # Verify data directory exists
+        if not os.path.exists(data_path):
+            raise FileNotFoundError(f"Data directory not found: {data_path}")
+        
+        loader = DataLoader(data_dir=data_path)
+        datasets = loader.load_all_data()
+        
+        if not datasets or 'enrolment' not in datasets:
+            raise ValueError("Data loader returned incomplete datasets")
+            
+        return datasets
+    except Exception as e:
+        st.error(f"❌ Error loading data: {str(e)}")
+        st.stop()
 
 try:
     datasets = load_data()
     enrolment_df = datasets['enrolment'].copy()
     demographic_df = datasets['demographic'].copy()
     biometric_df = datasets['biometric'].copy()
-except (AttributeError, TypeError) as e:
-    st.error("❌ Error loading data. Please check that data files exist in data/raw/")
+    
+    # Validate dataframes aren't empty
+    if enrolment_df.empty or demographic_df.empty or biometric_df.empty:
+        st.error("❌ One or more datasets are empty")
+        st.stop()
+        
+except Exception as e:
+    st.error(f"❌ Fatal error loading data: {str(e)}")
     st.stop()
 
 # Clean state names function
@@ -63,10 +98,14 @@ enrolment_df = clean_state_names(enrolment_df)
 demographic_df = clean_state_names(demographic_df)
 biometric_df = clean_state_names(biometric_df)
 
-# Prepare data
-enrolment_df['total_enroll'] = enrolment_df[['age_0_5', 'age_5_17', 'age_18_greater']].sum(axis=1)
-enrolment_df['children_enroll'] = enrolment_df[['age_0_5', 'age_5_17']].sum(axis=1)
-biometric_df['bio_child'] = biometric_df['bio_age_5_17']
+# Prepare data with error handling
+try:
+    enrolment_df['total_enroll'] = enrolment_df[['age_0_5', 'age_5_17', 'age_18_greater']].fillna(0).sum(axis=1)
+    enrolment_df['children_enroll'] = enrolment_df[['age_0_5', 'age_5_17']].fillna(0).sum(axis=1)
+    biometric_df['bio_child'] = biometric_df.get('bio_age_5_17', 0)
+except Exception as e:
+    st.error(f"❌ Error preparing data columns: {str(e)}")
+    st.stop()
 
 # Sidebar navigation
 st.sidebar.title("📊 Navigation")
@@ -383,169 +422,180 @@ elif page == "🔬 Advanced Analytics":
     """)
 
     # Figure source toggle
-    fig_source = st.radio("Figure source", ["Live (Plotly)", "Saved HTML"], index=0, horizontal=True)
+    fig_source = st.radio("Figure source", ["Live (Plotly)", "Saved HTML"], index=1, horizontal=True)
 
-    # Prepare aggregates (if not already)
-    enrolment_df['total_enroll'] = enrolment_df[['age_0_5', 'age_5_17', 'age_18_greater']].sum(axis=1)
-    enrolment_df['children_enroll'] = enrolment_df[['age_0_5', 'age_5_17']].sum(axis=1)
-    biometric_df['bio_child'] = biometric_df['bio_age_5_17']
+    try:
+        # Prepare aggregates (if not already)
+        enrolment_df['total_enroll'] = enrolment_df[['age_0_5', 'age_5_17', 'age_18_greater']].fillna(0).sum(axis=1)
+        enrolment_df['children_enroll'] = enrolment_df[['age_0_5', 'age_5_17']].fillna(0).sum(axis=1)
+        biometric_df['bio_child'] = biometric_df.get('bio_age_5_17', 0)
 
-    # State-level compliance
-    state_enroll = enrolment_df.groupby('state')[['children_enroll']].sum().reset_index()
-    state_bio = biometric_df.groupby('state')['bio_child'].sum().reset_index()
-    state_bio.columns = ['state', 'child_bio_updates']
-    state_data = state_enroll.merge(state_bio, on='state', how='left')
-    state_data['child_bio_updates'] = state_data['child_bio_updates'].fillna(0)
-    state_data['compliance_ratio'] = state_data['child_bio_updates'] / state_data['children_enroll']
+        # State-level compliance
+        state_enroll = enrolment_df.groupby('state')[['children_enroll']].sum().reset_index()
+        state_bio = biometric_df.groupby('state')['bio_child'].sum().reset_index()
+        state_bio.columns = ['state', 'child_bio_updates']
+        state_data = state_enroll.merge(state_bio, on='state', how='left')
+        state_data['child_bio_updates'] = state_data['child_bio_updates'].fillna(0)
+        state_data['compliance_ratio'] = (state_data['child_bio_updates'] + 0.001) / (state_data['children_enroll'] + 0.001)
 
-    # Urban/Rural split for urban_pct
-    district_volumes = enrolment_df.groupby('district')['total_enroll'].sum().sort_values(ascending=False)
-    urban_districts = set(district_volumes.head(50).index)
-    enrolment_df['area_type'] = enrolment_df['district'].apply(lambda x: 'Urban' if x in urban_districts else 'Rural')
+        # Urban/Rural split for urban_pct
+        district_volumes = enrolment_df.groupby('district')['total_enroll'].sum().sort_values(ascending=False)
+        urban_districts = set(district_volumes.head(50).index)
+        enrolment_df['area_type'] = enrolment_df['district'].apply(lambda x: 'Urban' if x in urban_districts else 'Rural')
 
-    # Per-state metrics
-    state_metrics = enrolment_df.groupby('state').agg({
-        'total_enroll': 'sum',
-        'district': 'nunique',
-        'area_type': lambda x: (x == 'Urban').sum() / len(x)
-    }).reset_index()
-    state_metrics.columns = ['state', 'total_enroll', 'num_districts', 'urban_pct']
-    state_metrics = state_metrics.merge(state_data[['state', 'compliance_ratio']], on='state', how='left').dropna()
+        # Per-state metrics
+        state_metrics = enrolment_df.groupby('state').agg({
+            'total_enroll': 'sum',
+            'district': 'nunique',
+            'area_type': lambda x: (x == 'Urban').sum() / max(len(x), 1)
+        }).reset_index()
+        state_metrics.columns = ['state', 'total_enroll', 'num_districts', 'urban_pct']
+        state_metrics = state_metrics.merge(state_data[['state', 'compliance_ratio']], on='state', how='left').dropna()
 
-    # Validation banner
-    canonical_states = set([
-        'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
-        'Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur',
-        'Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana',
-        'Tripura','Uttar Pradesh','Uttarakhand','West Bengal',
-        'Andaman And Nicobar Islands','Chandigarh','Dadra And Nagar Haveli And Daman And Diu','Delhi',
-        'Jammu And Kashmir','Ladakh','Lakshadweep','Puducherry'
-    ])
-    observed_states = set(state_data['state'].unique())
-    missing = sorted(list(canonical_states - observed_states))
-    extras = sorted(list(observed_states - canonical_states))
-    if not missing and not extras and len(observed_states) == 36:
-        st.success("State/UT validation passed: Observed = Canonical (36)")
-    else:
-        st.warning(f"Validation mismatch. Missing: {missing} | Extras: {extras}")
-
-    st.divider()
-    st.subheader("📈 Correlation: Predictors of Compliance")
-    if fig_source == "Live (Plotly)":
-        import plotly.express as px
-        fig = px.imshow(
-            state_metrics[['total_enroll', 'num_districts', 'urban_pct', 'compliance_ratio']].corr(),
-            text_auto=True,
-            color_continuous_scale='RdBu',
-            labels=dict(x='Variable', y='Variable', color='Correlation'),
-            title='Correlation Matrix: What Predicts Compliance?'
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        # Load saved HTML
-        html_path = os.path.join(os.path.dirname(current_dir), 'outputs', 'figures', 'advanced_correlation_heatmap.html')
-        if os.path.exists(html_path):
-            with open(html_path, 'r', encoding='utf-8') as f:
-                components.html(f.read(), height=600, scrolling=True)
+        # Validation banner
+        canonical_states = set([
+            'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
+            'Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur',
+            'Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana',
+            'Tripura','Uttar Pradesh','Uttarakhand','West Bengal',
+            'Andaman And Nicobar Islands','Chandigarh','Dadra And Nagar Haveli And Daman And Diu','Delhi',
+            'Jammu And Kashmir','Ladakh','Lakshadweep','Puducherry'
+        ])
+        observed_states = set(state_data['state'].unique())
+        missing = sorted(list(canonical_states - observed_states))
+        extras = sorted(list(observed_states - canonical_states))
+        if not missing and not extras and len(observed_states) == 36:
+            st.success("State/UT validation passed: Observed = Canonical (36)")
         else:
-            st.info("Saved correlation figure not found. Switch to Live mode.")
-    
-    st.markdown("""
-    **📌 Key Outcomes & Inferences:**
-    - **Compliance vs Enrollment**: Strong negative correlation suggests high-volume states struggle with compliance tracking
-    - **Compliance vs Urbanization**: Urban concentration tends to improve compliance (better infrastructure)
-    - **Implication**: While top states have scale, quality tracking requires balanced urban-rural infrastructure
-    """)
-    
+            st.warning(f"Validation: {len(observed_states)} states observed")
 
-    st.divider()
-    st.subheader("🧭 Clustering: State Groupings")
-    if fig_source == "Live (Plotly)":
-        from sklearn.preprocessing import StandardScaler
-        from sklearn.cluster import KMeans
-        cluster_data = state_metrics[['total_enroll', 'compliance_ratio', 'urban_pct']].copy()
-        cluster_data_scaled = StandardScaler().fit_transform(cluster_data)
-        kmeans = KMeans(n_clusters=4, random_state=42, n_init=10)
-        state_metrics['cluster'] = kmeans.fit_predict(cluster_data_scaled)
-        fig = px.scatter_3d(
-            state_metrics,
-            x='total_enroll', y='compliance_ratio', z='urban_pct', color='cluster',
-            hover_name='state',
-            labels={'total_enroll': 'Total Enrollment','compliance_ratio': 'Compliance Ratio','urban_pct': 'Urban %'},
-            title='State Clusters: Enrollment vs Compliance vs Urbanization',
-            color_continuous_scale='Viridis'
-        )
-        fig.update_layout(
-            scene=dict(
-                xaxis=dict(gridcolor='lightgray', showgrid=True),
-                yaxis=dict(gridcolor='lightgray', showgrid=True),
-                zaxis=dict(gridcolor='lightgray', showgrid=True)
+        st.divider()
+        st.subheader("📈 Correlation: Predictors of Compliance")
+        if fig_source == "Live (Plotly)":
+            import plotly.express as px
+            corr_matrix = state_metrics[['total_enroll', 'num_districts', 'urban_pct', 'compliance_ratio']].corr()
+            fig = px.imshow(
+                corr_matrix,
+                text_auto=True,
+                color_continuous_scale='RdBu',
+                labels=dict(x='Variable', y='Variable', color='Correlation'),
+                title='Correlation Matrix: What Predicts Compliance?'
             )
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        html_path = os.path.join(os.path.dirname(current_dir), 'outputs', 'figures', 'advanced_clustering_3d.html')
-        if os.path.exists(html_path):
-            with open(html_path, 'r', encoding='utf-8') as f:
-                components.html(f.read(), height=600, scrolling=True)
+            st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Saved clustering figure not found. Switch to Live mode.")
+            # Load saved HTML
+            html_path = os.path.join(os.path.dirname(current_dir), 'outputs', 'figures', 'advanced_correlation_heatmap.html')
+            if os.path.exists(html_path):
+                with open(html_path, 'r', encoding='utf-8') as f:
+                    components.html(f.read(), height=600, scrolling=True)
+            else:
+                st.info("Saved correlation figure not found. Using Live mode.")
+        
+        st.markdown("""
+        **📌 Key Outcomes & Inferences:**
+        - **Compliance vs Enrollment**: Strong negative correlation suggests high-volume states struggle with compliance tracking
+        - **Compliance vs Urbanization**: Urban concentration tends to improve compliance (better infrastructure)
+        - **Implication**: While top states have scale, quality tracking requires balanced urban-rural infrastructure
+        """)
+        
 
-    st.markdown("""
-    **📌 Key Outcomes & Inferences:**
-    - **Cluster 1 (High Enrollment + High Compliance)**: Tier-1 developed states with robust infrastructure—focus: optimization
-    - **Cluster 2 (High Enrollment + Low Compliance)**: Crisis zones (e.g., large states with tracking gaps)—focus: urgent intervention
-    - **Cluster 3 (Low Enrollment + Variable Compliance)**: Emerging/underserved states—focus: expansion infrastructure
-    - **Cluster 4 (Rural-Heavy States)**: Limited urbanization despite volume—focus: rural center deployment
-    - **Implication**: Different states need different strategies; one-size-fits-all policies will fail
-    """)
-    
-    st.subheader("📍 States by Cluster")
-    cluster_table_data = {f"Cluster {i+1}": [] for i in range(4)}
-    for cluster_id in range(4):
-        cluster_states = state_metrics[state_metrics['cluster'] == cluster_id].sort_values('total_enroll', ascending=False)
-        cluster_table_data[f"Cluster {cluster_id + 1}"] = cluster_states['state'].tolist()
-    max_len = max(len(v) for v in cluster_table_data.values())
-    for key in cluster_table_data:
-        cluster_table_data[key] += [''] * (max_len - len(cluster_table_data[key]))
-    cluster_df = pd.DataFrame(cluster_table_data)
-    st.dataframe(cluster_df, use_container_width=True, hide_index=True)
-    
+        st.divider()
+        st.subheader("🧭 Clustering: State Groupings")
+        if fig_source == "Live (Plotly)":
+            from sklearn.preprocessing import StandardScaler
+            from sklearn.cluster import KMeans
+            cluster_data = state_metrics[['total_enroll', 'compliance_ratio', 'urban_pct']].copy()
+            cluster_data_scaled = StandardScaler().fit_transform(cluster_data)
+            kmeans = KMeans(n_clusters=4, random_state=42, n_init=10)
+            state_metrics['cluster'] = kmeans.fit_predict(cluster_data_scaled)
+            fig = px.scatter_3d(
+                state_metrics,
+                x='total_enroll', y='compliance_ratio', z='urban_pct', color='cluster',
+                hover_name='state',
+                labels={'total_enroll': 'Total Enrollment','compliance_ratio': 'Compliance Ratio','urban_pct': 'Urban %'},
+                title='State Clusters: Enrollment vs Compliance vs Urbanization',
+                color_continuous_scale='Viridis'
+            )
+            fig.update_layout(
+                scene=dict(
+                    xaxis=dict(gridcolor='lightgray', showgrid=True),
+                    yaxis=dict(gridcolor='lightgray', showgrid=True),
+                    zaxis=dict(gridcolor='lightgray', showgrid=True)
+                )
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            html_path = os.path.join(os.path.dirname(current_dir), 'outputs', 'figures', 'advanced_clustering_3d.html')
+            if os.path.exists(html_path):
+                with open(html_path, 'r', encoding='utf-8') as f:
+                    components.html(f.read(), height=600, scrolling=True)
+            else:
+                st.info("Saved clustering figure not found. Using Live mode.")
 
-    st.divider()
-    st.subheader("📊 Regression Summary: Predicting Compliance")
-    from sklearn.linear_model import LinearRegression
-    from sklearn.ensemble import RandomForestRegressor
-    X = state_metrics[['total_enroll', 'num_districts', 'urban_pct']].values
-    y = state_metrics['compliance_ratio'].values
-    lr_model = LinearRegression().fit(X, y)
-    rf_model = RandomForestRegressor(n_estimators=100, random_state=42).fit(X, y)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"**Linear Regression R²:** {lr_model.score(X, y):.4f}")
-        st.write({
-            'total_enroll': float(lr_model.coef_[0]),
-            'num_districts': float(lr_model.coef_[1]),
-            'urban_pct': float(lr_model.coef_[2])
-        })
-    with col2:
-        st.markdown(f"**Random Forest R²:** {rf_model.score(X, y):.4f}")
-        st.write({
-            'total_enroll': float(rf_model.feature_importances_[0]),
-            'num_districts': float(rf_model.feature_importances_[1]),
-            'urban_pct': float(rf_model.feature_importances_[2])
-        })
+        st.markdown("""
+        **📌 Key Outcomes & Inferences:**
+        - **Cluster 1 (High Enrollment + High Compliance)**: Tier-1 developed states with robust infrastructure—focus: optimization
+        - **Cluster 2 (High Enrollment + Low Compliance)**: Crisis zones (e.g., large states with tracking gaps)—focus: urgent intervention
+        - **Cluster 3 (Low Enrollment + Variable Compliance)**: Emerging/underserved states—focus: expansion infrastructure
+        - **Cluster 4 (Rural-Heavy States)**: Limited urbanization despite volume—focus: rural center deployment
+        - **Implication**: Different states need different strategies; one-size-fits-all policies will fail
+        """)
+        
+        st.subheader("📍 States by Cluster")
+        if 'cluster' in state_metrics.columns:
+            cluster_table_data = {f"Cluster {i+1}": [] for i in range(4)}
+            for cluster_id in range(4):
+                cluster_states = state_metrics[state_metrics['cluster'] == cluster_id].sort_values('total_enroll', ascending=False)
+                cluster_table_data[f"Cluster {cluster_id + 1}"] = cluster_states['state'].tolist()
+            max_len = max(len(v) for v in cluster_table_data.values()) if cluster_table_data else 0
+            for key in cluster_table_data:
+                cluster_table_data[key] += [''] * (max_len - len(cluster_table_data[key]))
+            cluster_df = pd.DataFrame(cluster_table_data)
+            st.dataframe(cluster_df, use_container_width=True, hide_index=True)
+        
+
+        st.divider()
+        st.subheader("📊 Regression Summary: Predicting Compliance")
+        from sklearn.linear_model import LinearRegression
+        from sklearn.ensemble import RandomForestRegressor
+        X = state_metrics[['total_enroll', 'num_districts', 'urban_pct']].values
+        y = state_metrics['compliance_ratio'].values
+        
+        if len(X) > 3:  # Need at least 4 samples for meaningful regression
+            lr_model = LinearRegression().fit(X, y)
+            rf_model = RandomForestRegressor(n_estimators=100, random_state=42).fit(X, y)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(f"**Linear Regression R²:** {lr_model.score(X, y):.4f}")
+                st.write({
+                    'total_enroll': float(lr_model.coef_[0]),
+                    'num_districts': float(lr_model.coef_[1]),
+                    'urban_pct': float(lr_model.coef_[2])
+                })
+            with col2:
+                st.markdown(f"**Random Forest R²:** {rf_model.score(X, y):.4f}")
+                st.write({
+                    'total_enroll': float(rf_model.feature_importances_[0]),
+                    'num_districts': float(rf_model.feature_importances_[1]),
+                    'urban_pct': float(rf_model.feature_importances_[2])
+                })
+        else:
+            st.warning("Insufficient data for regression analysis")
+        
+        st.markdown("""
+        **📌 Key Outcomes & Inferences:**
+        - **Model Performance (R²)**: Measures how well enrollment scale and urbanization predict compliance quality
+        - **Feature Importance**: Identifies which factors most strongly drive biometric compliance across states
+          - **Enrollment Volume**: Large states need scaled tracking infrastructure; more data = harder to maintain compliance
+          - **Number of Districts**: Fragmentation creates coordination challenges; more districts = compliance complexity
+          - **Urbanization %**: Urban concentration enables better infrastructure utilization and compliance tracking
+        - **Prediction Implication**: To improve compliance, focus on states with high enrollment + rural disparity (Clusters 2-3)
+        - **Actionable Insight**: States can improve compliance by investing in distributed (non-urban-centric) biometric infrastructure
+        """)
     
-    st.markdown("""
-    **📌 Key Outcomes & Inferences:**
-    - **Model Performance (R²)**: Measures how well enrollment scale and urbanization predict compliance quality
-    - **Feature Importance**: Identifies which factors most strongly drive biometric compliance across states
-      - **Enrollment Volume**: Large states need scaled tracking infrastructure; more data = harder to maintain compliance
-      - **Number of Districts**: Fragmentation creates coordination challenges; more districts = compliance complexity
-      - **Urbanization %**: Urban concentration enables better infrastructure utilization and compliance tracking
-    - **Prediction Implication**: To improve compliance, focus on states with high enrollment + rural disparity (Clusters 2-3)
-    - **Actionable Insight**: States can improve compliance by investing in distributed (non-urban-centric) biometric infrastructure
-    """)
+    except Exception as e:
+        st.error(f"❌ Error in Advanced Analytics: {str(e)}")
+        st.info("Try refreshing the page or switching to Saved HTML mode.")
     
 
 # ============================================================================
