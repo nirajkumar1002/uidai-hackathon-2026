@@ -1,18 +1,18 @@
 # Core Data Analysis
-pandas>=2.2.0
-numpy>=1.26.0
+pandas==2.1.4
+numpy==1.24.3
 
 # Visualization
-matplotlib>=3.8.0
-seaborn>=0.13.0
-plotly>=5.18.0
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.18.0
 
-# Statistical Analysis
-scipy>=1.12.0
-scikit-learn>=1.4.0
+# Statistical Analysis (pinned to pre-built wheels)
+scipy==1.11.4
+scikit-learn==1.3.2
 
 # Dashboard & Reporting
-streamlit>=1.29.0
+streamlit==1.29.0
 
 # Utilities
-python-dateutil>=2.8.0
+python-dateutil==2.8.2
