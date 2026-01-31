@@ -632,11 +632,11 @@ elif page == "👥 Team Dhurandhar":
     st.markdown("---")
     
     team_members = [
-        {"name": "Niraj Kumar", "linkedin": "https://linkedin.com/in/niraj-kumar", "emoji": "🧑‍💼"},
-        {"name": "Shruti Chandagade", "linkedin": "https://linkedin.com/in/shruti-chandagade", "emoji": "👩‍💼"},
-        {"name": "Pawan Chaudhary", "linkedin": "https://linkedin.com/in/pawan-chaudhary", "emoji": "🧑‍💼"},
-        {"name": "Ritesh Sharma", "linkedin": "https://linkedin.com/in/ritesh-sharma", "emoji": "🧑‍💼"},
-        {"name": "Pradeep Mondal", "linkedin": "https://linkedin.com/in/pradeep-mondal", "emoji": "🧑‍💼"},
+        {"name": "Niraj Kumar", "linkedin": "linkedin.com/in/iamnirajkumar", "emoji": "🧑‍💼"},
+        {"name": "Shruti Chandagade", "linkedin": "linkedin.com/in/shruti-chandagade-9b731a3a6", "emoji": "👩‍💼"},
+        {"name": "Pawan Chaudhary", "linkedin": "linkedin.com/in/epawan", "emoji": "🧑‍💼"},
+        {"name": "Ritesh Sharma", "linkedin": "linkedin.com/in/ritesh-sharma-961a09285", "emoji": "🧑‍💼"},
+        {"name": "Pradeep Mondal", "linkedin": "linkedin.com/in/impradeepmondal", "emoji": "🧑‍💼"},
     ]
     
     col1, col2 = st.columns(2)
