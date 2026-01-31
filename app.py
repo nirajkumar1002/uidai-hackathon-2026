@@ -41,17 +41,13 @@ st.markdown("""
         padding: 10px;
         border-radius: 5px;
     }
-    /* Expand sidebar and fix text wrapping */
+    /* Optimize sidebar for better text display */
     [data-testid="stSidebar"] {
-        min-width: 600px !important;
-        width: 600px !important;
-    }
-    [data-testid="stSidebarNav"] {
-        padding: 0 !important;
+        width: 250px !important;
     }
     .css-1d391kg {
-        padding-left: 20px;
-        padding-right: 20px;
+        padding-left: 15px;
+        padding-right: 15px;
     }
 </style>
 """, unsafe_allow_html=True)
