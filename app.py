@@ -43,7 +43,7 @@ st.markdown("""
     }
     /* Optimize sidebar for better text display */
     [data-testid="stSidebar"] {
-        width: 250px !important;
+        width: 350px !important;
     }
     .css-1d391kg {
         padding-left: 15px;
