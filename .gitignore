@@ -1,10 +1,10 @@
-# .gitignore for UIDAI Hackathon Project
+# .gitignore for UIDAI Hackathon Project - OPTIMIZED FOR DEPLOYMENT
 
 # Data files (too large for git)
+data/raw/                   # EXCLUDE: Raw 209MB dataset (not needed for deployment)
 data/raw/*.csv
+!data/processed/            # KEEP: Processed files for deployment
 data/processed/*.csv
-*.xlsx
-*.xls
 
 # Python
 __pycache__/
@@ -34,10 +34,12 @@ wheels/
 # Jupyter Notebook
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+*.ipynb
 
 # Environment
 .env
 .venv
+.streamlit/secrets.toml
 
 # IDE
 .vscode/
@@ -48,6 +50,14 @@ wheels/
 
 # OS
 .DS_Store
+
+# Logs
+logs-*
+*.log
+
+# Streamlit cache
+.streamlit/cache/
+
 Thumbs.db
 
 # Outputs (keep structure but ignore generated files)

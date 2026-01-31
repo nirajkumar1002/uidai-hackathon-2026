@@ -1,0 +1,53 @@
+{
+  "preprocessing_date": "2026-02-01T00:38:32.340538",
+  "raw_size_mb": 209,
+  "processed_size_mb": 0.01,
+  "compression_ratio": 19623.24,
+  "datasets": {
+    "enrolment": {
+      "rows": 619912,
+      "columns": [
+        "date",
+        "state",
+        "district",
+        "pincode",
+        "age_0_5",
+        "age_5_17",
+        "age_18_greater",
+        "total_enroll",
+        "children_enroll",
+        "is_urban"
+      ]
+    },
+    "biometric": {
+      "rows": 1527796,
+      "columns": [
+        "date",
+        "state",
+        "district",
+        "pincode",
+        "bio_age_5_17",
+        "bio_age_17_",
+        "bio_child"
+      ]
+    },
+    "demographic": {
+      "rows": 1246788,
+      "columns": [
+        "date",
+        "state",
+        "district",
+        "pincode",
+        "demo_age_5_17",
+        "demo_age_17_"
+      ]
+    }
+  },
+  "processed_files": {
+    "state_compliance.csv": 36,
+    "state_geography.csv": 36,
+    "district_volumes.csv": 984,
+    "state_urban_rural.csv": 36,
+    "state_metrics_full.csv": 36
+  }
+}
