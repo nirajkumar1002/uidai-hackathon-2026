@@ -166,7 +166,7 @@ page = st.sidebar.radio(
         "🔴 Problem #3: Urban-Rural Gap",
         "🔬 Advanced Analytics",
         "💡 Synthesis & Recommendations",
-        "👥 Team"
+        "👥 Team Dhurandhar"
     ]
 )
 
@@ -625,18 +625,18 @@ elif page == "💡 Synthesis & Recommendations":
 # PAGE 7: TEAM
 # ============================================================================
 
-elif page == "👥 Team":
+elif page == "👥 Team Dhurandhar":
     st.title("👥 Team: Dhurandhar")
     st.subheader("UIDAI Data Hackathon 2026")
     
     st.markdown("---")
     
     team_members = [
-        {"name": "Niraj Kumar", "email": "21f1006589@ds.study.iitm.ac.in", "emoji": "🧑‍💼"},
-        {"name": "Shruti Chandagade", "email": "placeholder@email.com", "emoji": "👩‍💼"},
-        {"name": "Pawan Chaudhary", "email": "placeholder@email.com", "emoji": "🧑‍💼"},
-        {"name": "Ritesh Sharma", "email": "placeholder@email.com", "emoji": "🧑‍💼"},
-        {"name": "Pradeep Mondal", "email": "placeholder@email.com", "emoji": "🧑‍💼"},
+        {"name": "Niraj Kumar", "linkedin": "https://linkedin.com/in/niraj-kumar", "emoji": "🧑‍💼"},
+        {"name": "Shruti Chandagade", "linkedin": "https://linkedin.com/in/shruti-chandagade", "emoji": "👩‍💼"},
+        {"name": "Pawan Chaudhary", "linkedin": "https://linkedin.com/in/pawan-chaudhary", "emoji": "🧑‍💼"},
+        {"name": "Ritesh Sharma", "linkedin": "https://linkedin.com/in/ritesh-sharma", "emoji": "🧑‍💼"},
+        {"name": "Pradeep Mondal", "linkedin": "https://linkedin.com/in/pradeep-mondal", "emoji": "🧑‍💼"},
     ]
     
     col1, col2 = st.columns(2)
@@ -647,7 +647,7 @@ elif page == "👥 Team":
             <div style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; background-color: #f9f9f9;">
                 <h3 style="margin-bottom: 10px; color: black;">{member['emoji']} {member['name']}</h3>
                 <p style="color: #666; margin: 5px 0;">
-                    📧 <a href="mailto:{member['email']}" style="color: #0066cc; text-decoration: none;">{member['email']}</a>
+                    🔗 <a href="{member['linkedin']}" target="_blank" style="color: #0066cc; text-decoration: none;">LinkedIn Profile</a>
                 </p>
             </div>
             """, unsafe_allow_html=True)
