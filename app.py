@@ -670,6 +670,4 @@ st.markdown("""
 **UIDAI Data Hackathon 2026**  
 Three-Problem Analysis: Biometric Compliance + Geographic Divide + Urban-Rural Gap  
 *Data-driven insights for inclusive digital identity access*
-
-📊 **Architecture**: Preprocessing done separately | App only loads processed data | Optimized for Streamlit Cloud
 """)
