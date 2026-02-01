@@ -629,7 +629,6 @@ elif page == "👥 Team Dhurandhar":
     st.title("👥 Team: Dhurandhar")
     st.subheader("UIDAI Data Hackathon 2026")
     
-    st.markdown("---")
     
     team_members = [
         {"name": "Niraj Kumar", "linkedin": "https://linkedin.com/in/iamnirajkumar", "emoji": "🧑‍💼"},
@@ -660,6 +659,16 @@ elif page == "👥 Team Dhurandhar":
     for inclusive digital identity access across India.
     """)
 
+    st.markdown("---")
+    audio_file_path = Path(__file__).parent / "assets" / "audio" / "dhurandhar_thussh_thuss.mp3"
+    if audio_file_path.exists():
+        st.audio(str(audio_file_path), format="audio/mp3", autoplay=True)
+        st.caption("This audio is used for non-commercial purposes only.")
+    else:
+        st.warning(
+            "Audio file not found. Place the licensed song at: "
+            f"{audio_file_path}"
+        )
 # ============================================================================
 # FOOTER
 # ============================================================================

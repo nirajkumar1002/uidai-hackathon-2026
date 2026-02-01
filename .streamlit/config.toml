@@ -5,9 +5,6 @@ toolbarMode = "minimal"
 [logger]
 level = "warning"
 
-[_client.CSS]
-sidebar_width = 400
-
 [server]
 # Optimize for free tier (1GB RAM limit)
 maxUploadSize = 200
